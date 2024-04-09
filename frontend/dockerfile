@@ -1,0 +1,10 @@
+FROM node:iron-bookworm-slim
+
+RUN mkdir /frontend
+WORKDIR /frontend
+
+COPY . .
+
+RUN npm install -g bun
+RUN bun install
+CMD npm run dev
