@@ -7,12 +7,16 @@ import com.webdev.backend.model.Student;
 import java.util.List;
 import java.util.Optional;
 
+public interface StudentRepository extends JpaRepository<Student, Long>, JpaSpecificationExecutor<Student> {
 
+	Student findByPhoneNumber(String phoneNumber);
 
-public interface StudentRepository extends JpaRepository<Student, Long>, JpaSpecificationExecutor<Student>{
-    Student findByPhoneNumber(String phoneNumber);
-    Student findByStudentNumber(String studentNumber);
-    Optional<Student> findById(Long id);
-    long countByGender(String gender);
-    long countByHighestEducation(String highestEducation);
+	Student findByStudentNumber(String studentNumber);
+
+	Optional<Student> findById(Long id);
+
+	Long countByGender(String gender);
+
+	Long countByHighestEducation(String highestEducation);
+
 }

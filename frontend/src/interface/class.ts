@@ -13,7 +13,7 @@ export function isClass(arg: any): arg is Class {
     arg.className !== undefined &&
     arg.classroom !== undefined &&
     arg.startTime !== undefined &&
-    arg.endTime !== undefined && 
+    arg.endTime !== undefined &&
     arg.headTeacherId !== undefined
   )
 }

@@ -88,6 +88,36 @@ export const asyncRoutes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: '/course',
+    name: '课程',
+    meta: {
+      title: '课程',
+      icon: () => h(CircleStackIcon, { class: 'w-4 h-4' }),
+      roles: ['admin'],
+    },
+    component: MainLayout,
+    children: [
+      {
+        path: '/course/management',
+        name: '课程管理',
+        meta: {
+          title: '课程管理',
+          icon: () => h(Battery100Icon, { class: 'w-4 h-4' }),
+        },
+        component: () => import('@/views/course-management.vue'),
+      },
+      {
+        path: '/course/assignment',
+        name: '课程安排',
+        meta: {
+          title: '课程安排',
+          icon: () => h(Battery100Icon, { class: 'w-4 h-4' }),
+        },
+        component: () => import('@/views/course-assignment.vue'),
+      },
+    ],
+  },
+  {
     path: '/employee',
     name: '员工',
     meta: {

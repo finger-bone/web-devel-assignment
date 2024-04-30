@@ -1,10 +1,10 @@
 <template>
   <div>
     <a-button class="my-2" type="primary" @click="isAddModalVisible = true"> 添加部门 </a-button>
-    <a-table :dataSource="departments" :columns="columns" rowKey="id">
+    <a-table :pagination="false" :dataSource="departments" :columns="columns" rowKey="id">
       <template #action="record">
-        <a-button class="mx-2" @click="handleEdit(record)">编辑</a-button>
-        <a-button class="mx-2" @click="handleRemove(record)">删除</a-button>
+        <a-button type="link" @click="handleEdit(record)">编辑</a-button>
+        <a-button type="link" @click="handleRemove(record)">删除</a-button>
       </template>
       <template #lastOperationTime="{ text }">
         {{ convertTimestamp(text) }}
@@ -55,6 +55,7 @@ if (!token || token.length === 0) {
 
 // UI Part
 import convertTimestamp from '@/utils/time'
+import { notification } from 'ant-design-vue';
 
 const isEditModalVisible = ref(false)
 const isAddModalVisible = ref(false)
@@ -80,6 +81,9 @@ const columns = [
 
 async function handleEditOk() {
   if (currentDepartment && editName.value) {
+    if(!(await validateDepartmentName(editName.value, currentDepartment.departmentName))) {
+      return;
+    }
     await editDepartment(currentDepartment, editName.value)
     isEditModalVisible.value = false
   }
@@ -90,6 +94,9 @@ function handleEditCancel() {
 }
 
 async function handleAddOk() {
+  if(!(await validateDepartmentName(addName.value))) {
+    return;
+  }
   if (addName.value) {
     await addDepartment(addName.value)
     isAddModalVisible.value = false
@@ -136,12 +143,9 @@ import { onMounted, ref } from 'vue'
 
 const departments = ref<Department[]>([])
 
-async function fetch() {
-  const response = await axios.get('/api/secure/department', {
-    headers: {
-      Authorization: token,
-    },
-  })
+async function fetchDepartments() {
+  console.error(token)
+  const response = await axios.get('/api/secure/department', {})
   if (Array.isArray(response.data)) {
     departments.value = response.data.filter(isDepartment)
   }
@@ -149,12 +153,8 @@ async function fetch() {
 
 async function deleteDepartment(department: Department) {
   try {
-    await axios.delete(`/api/secure/department/${department.id}`, {
-      headers: {
-        Authorization: token,
-      },
-    })
-    await fetch()
+    await axios.delete(`/api/secure/department/${department.id}`, {})
+    await fetchDepartments()
   } catch (error) {
     console.error('Failed to delete department:', error)
   }
@@ -163,29 +163,65 @@ async function deleteDepartment(department: Department) {
 async function editDepartment(department: Department, newDepartmentName: string) {
   try {
     if (newDepartmentName) {
-      await axios.put(`/api/secure/department/${department.id}`, {
-        departmentName: newDepartmentName,
-        headers: {
-          Authorization: token,
+      await axios.put(
+        `/api/secure/department/${department.id}`,
+        {},
+        {
+          params: {
+            departmentName: newDepartmentName,
+          },
         },
-      })
-      await fetch()
+      )
+      await fetchDepartments()
     }
   } catch (error) {
     console.error('Failed to edit department:', error)
   }
 }
 
+async function validateDepartmentName(departmentName: string, excluded: string = "") {
+  if(departmentName.length < 2 || departmentName.length > 10) {
+    notification.error({
+      message: '部门名称长度应在2-10之间',
+    });
+    return false;
+  }
+  if(
+    !((await axios.get(
+      `/api/secure/department/valid/${departmentName}`,
+      {
+        params: {
+          excluded: excluded,
+        }
+      }
+    )).data)
+  ) {
+    notification.error({
+      message: '部门名称已存在',
+    });
+    return false;
+  }
+
+  return true;
+}
+
 async function addDepartment(departmentName: string) {
+  if(!(await validateDepartmentName(departmentName))) {
+    return;
+  }
   try {
     if (departmentName) {
-      await axios.post(`/api/secure/department`, {
-        departmentName: departmentName,
-        headers: {
-          Authorization: token,
+      await axios.post(
+        `/api/secure/department`,
+        {},
+        {
+          params: {
+            departmentName: departmentName,
+          },
         },
-      })
-      await fetch()
+      )
+      addName.value = ''
+      await fetchDepartments()
     }
   } catch (error) {
     console.error('Failed to add department:', error)
@@ -193,6 +229,6 @@ async function addDepartment(departmentName: string) {
 }
 
 onMounted(async () => {
-  fetch()
+  fetchDepartments()
 })
 </script>

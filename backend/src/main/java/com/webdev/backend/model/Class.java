@@ -20,28 +20,27 @@ import lombok.NoArgsConstructor;
 @Table(name = "classes")
 @Entity
 public class Class {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String className;
-    private String classroom;
-    private Date startTime;
-    private Date endTime;
-    private Integer headTeacherId;
 
-    public void setStartTime(Date startTime) {
-        this.startTime = startTime;
-    }
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    public void setEndTime(Date date) {
-        this.endTime = date;
-    }
+	private String className;
 
-    public void setEndTime(Timestamp endTime) {
-        this.endTime = new Date(endTime.getTime());
-    }
+	private String classroom;
 
-    public void setStartTime(Timestamp startTime) {
-        this.startTime = new Date(startTime.getTime());
-    }
+	private Date startTime;
+
+	private Date endTime;
+
+	private Integer headTeacherId;
+
+	public void setEndTime(Timestamp endTime) {
+		this.endTime = new Date(endTime.getTime());
+	}
+
+	public void setStartTime(Timestamp startTime) {
+		this.startTime = new Date(startTime.getTime());
+	}
+
 }

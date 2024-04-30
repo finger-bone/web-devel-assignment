@@ -1,0 +1,6 @@
+<pluginRepositories>
+    <pluginRepository>
+        <id>spring-plugins</id>
+        <url>https://repo.spring.io/plugins-release/</url>
+    </pluginRepository>
+</pluginRepositories>

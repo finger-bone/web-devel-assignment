@@ -25,39 +25,41 @@ import lombok.NoArgsConstructor;
 @Table(name = "employees")
 @Entity
 public class Employee {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String name;
-    private String username;
-    private byte[] image;
-    private String gender;
-    private String position;
-    private Date hireDate;
-    private Timestamp lastOperationTime;
-    private Long departmentId;
 
-    public void setHireDate(LocalDate hireDate) {
-        this.hireDate = Date.valueOf(hireDate);
-    }
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    public Timestamp getLastOperationTime() {
-        return lastOperationTime;
-    }
+	private String name;
 
-    public void setLastOperationTime(java.util.Date date) {
-        this.lastOperationTime = new Timestamp(date.getTime());
-    }
+	private String username;
 
-    public void setLastOperationTime() {
-        this.lastOperationTime = new Timestamp(System.currentTimeMillis());
-    }
+	private byte[] image;
 
-    public void setHireDate(java.util.Date hireDate) {
-        if (hireDate == null) {
-            this.hireDate = null;
-            return;
-        }
-        this.hireDate = new Date(hireDate.getTime());
-    }
+	private String gender;
+
+	private String position;
+
+	private Date hireDate;
+
+	private Timestamp lastOperationTime;
+
+	private Long departmentId;
+
+	public Timestamp getLastOperationTime() {
+		return lastOperationTime;
+	}
+
+	public void setLastOperationTime() {
+		this.lastOperationTime = new Timestamp(System.currentTimeMillis());
+	}
+
+	public void setHireDate(java.util.Date hireDate) {
+		if (hireDate == null) {
+			this.hireDate = null;
+			return;
+		}
+		this.hireDate = new Date(hireDate.getTime());
+	}
+
 }

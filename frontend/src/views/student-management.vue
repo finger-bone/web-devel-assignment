@@ -9,31 +9,43 @@
     >
       批量删除
     </a-button>
-    <a-form>
-      <a-form-item label="姓名">
-        <a-input v-model:value="searchForm.name" />
-      </a-form-item>
-      <a-form-item label="学号">
-        <a-input v-model:value="searchForm.studentNumber" />
-      </a-form-item>
-      <a-form-item label="班级">
-        <a-input v-model:value="searchForm.className" />
-      </a-form-item>
-      <a-form-item label="最高学历">
-        <a-select v-model:value="searchForm.highestEducation">
-          <a-select-option value="初中">初中</a-select-option>
-          <a-select-option value="高中">高中</a-select-option>
-          <a-select-option value="大专">大专</a-select-option>
-          <a-select-option value="本科">本科</a-select-option>
-          <a-select-option value="硕士">硕士</a-select-option>
-          <a-select-option value="博士">博士</a-select-option>
-        </a-select>
-      </a-form-item>
-      <a-form-item>
-        <a-button type="primary" @click="handleSearch">搜索</a-button>
-      </a-form-item>
+    <a-form @submit="handleSearch">
+      <a-row :gutter="16">
+        <a-col :span="4">
+          <a-form-item label="姓名">
+            <a-input v-model:value="searchForm.name" />
+          </a-form-item>
+        </a-col>
+        <a-col :span="4">
+          <a-form-item label="学号">
+            <a-input v-model:value="searchForm.studentNumber" />
+          </a-form-item>
+        </a-col>
+        <a-col :span="4">
+          <a-form-item label="班级">
+            <a-input v-model:value="searchForm.className" />
+          </a-form-item>
+        </a-col>
+        <a-col :span="4">
+          <a-form-item label="最高学历">
+            <a-select v-model:value="searchForm.highestEducation">
+              <a-select-option value="初中">初中</a-select-option>
+              <a-select-option value="高中">高中</a-select-option>
+              <a-select-option value="大专">大专</a-select-option>
+              <a-select-option value="本科">本科</a-select-option>
+              <a-select-option value="硕士">硕士</a-select-option>
+              <a-select-option value="博士">博士</a-select-option>
+            </a-select>
+          </a-form-item>
+        </a-col>
+        <a-col :span="4">
+          <a-form-item>
+            <a-button type="primary" @click="handleSearch">搜索</a-button>
+          </a-form-item>
+        </a-col>
+      </a-row>
     </a-form>
-    <a-table :dataSource="students" :columns="columns" rowKey="id">
+    <a-table :pagination="false" :dataSource="students" :columns="columns" rowKey="id">
       <template #checkbox="{ text }">
         <a-checkbox @change="(e: Event) => handleDeleteCandidates(e, text)" />
       </template>
@@ -41,7 +53,7 @@
         {{ convertTimestamp(text) }}
       </template>
       <template #class="{ text }">
-        {{ classes.find(c => c.id === text)?.name }}
+        {{ classes.find((c) => c.id === text)?.name }}
       </template>
       <template #action="{ record }">
         <a-button type="link" @click="editStudent(record)">编辑</a-button>
@@ -49,6 +61,14 @@
         <a-button type="link" @click="editDisciplinaryStudent(record)">违纪</a-button>
       </template>
     </a-table>
+    <a-pagination
+      v-model:current="current"
+      v-model:pageSize="pageSize"
+      show-size-changer
+      :total="500"
+      @showSizeChange="onShowSizeChange"
+      class="mt-2"
+    />
     <a-modal
       v-model:visible="isAddModalVisible"
       ok-text="Confirm"
@@ -111,16 +131,16 @@
           }}</a-select-option>
         </a-select>
       </a-form-item>
-    <a-form-item label="性别">
+      <a-form-item label="性别">
         <a-select v-model:value="editStudentForm.gender">
-            <a-select-option value="男性">男性</a-select-option>
-            <a-select-option value="女性">女性</a-select-option>
+          <a-select-option value="男性">男性</a-select-option>
+          <a-select-option value="女性">女性</a-select-option>
         </a-select>
-    </a-form-item>
-    <a-form-item label="电话号码">
+      </a-form-item>
+      <a-form-item label="电话号码">
         <a-input v-model:value="editStudentForm.phoneNumber" />
-    </a-form-item>
-    <a-form-item label="最高学历">
+      </a-form-item>
+      <a-form-item label="最高学历">
         <a-select v-model:value="editStudentForm.highestEducation">
           <a-select-option value="初中">初中</a-select-option>
           <a-select-option value="高中">高中</a-select-option>
@@ -129,7 +149,7 @@
           <a-select-option value="硕士">硕士</a-select-option>
           <a-select-option value="博士">博士</a-select-option>
         </a-select>
-    </a-form-item>
+      </a-form-item>
     </a-modal>
     <a-modal
       v-model:visible="isDeleteModalVisible"
@@ -138,8 +158,8 @@
       @ok="handleDeleteOk"
       @cancel="handleDeleteCancel"
     >
-      <template #title>删除学神</template>
-      <p>Are you sure you want to delete this student?</p>
+      <template #title>删除学生</template>
+      <p>你确定要删除该学生吗？</p>
     </a-modal>
     <a-modal
       v-model:visible="isDisciplinaryModalVisible"
@@ -147,10 +167,10 @@
       cancel-text="取消"
       @ok="handleEditDisciplinaryOk"
       @cancel="handleEditDisciplinaryCancel"
-      >
+    >
       <template #title>Disciplinary</template>
       <a-form-item label="违纪扣分">
-        <a-input-number v-model:value="disciplinaryPoints" :min="0"/>
+        <a-input-number v-model:value="disciplinaryPoints" :min="0" />
       </a-form-item>
     </a-modal>
     <a-modal
@@ -167,20 +187,12 @@
 </template>
 
 <script lang="ts" setup>
-import { useUserStore } from '@/store/modules/user'
-
-const token = useUserStore().token
-if (!token || token.length === 0) {
-  router.push('/login')
-}
-
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
 import convertTimestamp from '@/utils/time'
-import { router } from '@/router'
 import { type Student } from '@/interface/student'
 import { Class, isClass } from '@/interface/class'
-import { notification } from 'ant-design-vue';
+import { notification } from 'ant-design-vue'
 
 const deleteCandidates = ref<Array<number>>([])
 
@@ -192,16 +204,30 @@ function handleDeleteCandidates(e: Event, id: number) {
   }
 }
 
-
 // UI Part
+const current = ref(1)
+const pageSize = ref(10)
+function onShowSizeChange(newCurrent: number, newPageSize: number) {
+  current.value = newCurrent
+  pageSize.value = newPageSize
+}
+
+watch(current, () => {
+  handleSearch()
+})
+
+watch(pageSize, () => {
+  handleSearch()
+})
+
 const isAddModalVisible = ref(false)
 const columns = [
   { title: '', dataIndex: 'id', key: 'checkbox', slots: { customRender: 'checkbox' } },
   { title: '学号', dataIndex: 'id', key: 'id' },
   { title: '姓名', dataIndex: 'name', key: 'name' },
   { title: '学号', dataIndex: 'studentNumber', key: 'studentNumber' },
-  { title: '班级', dataIndex: 'classId', key: 'classId', slots: { customRender: 'class' }},
-  { title: '性别', dataIndex: 'gender', key: 'gender'},
+  { title: '班级', dataIndex: 'classId', key: 'classId', slots: { customRender: 'class' } },
+  { title: '性别', dataIndex: 'gender', key: 'gender' },
   { title: '电话号码', dataIndex: 'phoneNumber', key: 'phoneNumber' },
   { title: '最高学历', dataIndex: 'highestEducation', key: 'highestEducation' },
   { title: '违纪次数', dataIndex: 'disciplinaryActions', key: 'disciplinaryActions' },
@@ -227,13 +253,7 @@ const classes = ref<
 >([])
 
 async function fetchClasses() {
-  classes.value = (
-    await axios.get('/api/secure/class/search', {
-      headers: {
-        Authorization: token,
-      },
-    })
-  ).data
+  classes.value = (await axios.get('/api/secure/class/search', {})).data
     .filter(isClass)
     .map((c: Class) => {
       return {
@@ -273,22 +293,17 @@ async function handleSearch() {
   if (searchForm.value.highestEducation) {
     params.highestEducation = searchForm.value.highestEducation
   }
+  params.start = current.value * pageSize.value - pageSize.value
+  params.end = current.value * pageSize.value
 
   const response = await axios.get('/api/secure/student/search', {
-    headers: {
-      Authorization: token,
-    },
-    params,
+    params: params,
   })
   students.value = response.data
 }
 
 async function fetchStudents() {
-  const response = await axios.get('/api/secure/student/search', {
-    headers: {
-      Authorization: token,
-    },
-  })
+  const response = await axios.get('/api/secure/student/search', {})
   students.value = response.data
 }
 
@@ -324,16 +339,11 @@ function handleDeleteMultipleOk() {
   isDeleteMultipleModalVisible.value = false
 }
 
-
 async function deleteMultiple() {
   try {
     await Promise.all(
       deleteCandidates.value.map(async (id) => {
-        await axios.delete(`/api/secure/student/${id}`, {
-          headers: {
-            Authorization: token,
-          },
-        })
+        await axios.delete(`/api/secure/student/${id}`, {})
       }),
     )
     deleteCandidates.value = []
@@ -343,7 +353,11 @@ async function deleteMultiple() {
   }
 }
 
-async function validateStudentForm(form: StudentForm, excludedNumber: string = '', excludedPhone: string = '') {
+async function validateStudentForm(
+  form: StudentForm,
+  excludedNumber: string = '',
+  excludedPhone: string = '',
+) {
   if (
     !form.name ||
     form.name.length < 2 ||
@@ -353,8 +367,8 @@ async function validateStudentForm(form: StudentForm, excludedNumber: string = '
     notification.error({
       message: '学员姓名无效',
       description: '学员姓名必须为2-10个字符，只能包含中文、英文和数字。',
-    });
-    return false;
+    })
+    return false
   }
 
   if (
@@ -365,33 +379,31 @@ async function validateStudentForm(form: StudentForm, excludedNumber: string = '
     notification.error({
       message: '学号无效',
       description: '学号必须为10个字符，只能包含英文和数字。',
-    });
-    return false;
+    })
+    return false
   }
 
-  if(excludedNumber.length > 0) {
+  if (excludedNumber.length > 0) {
     if (
-      !(await axios.get(`/api/secure/student/valid/number/${form.studentNumber}`, {
-        params: { excluded: excludedNumber }, headers: { Authorization: token },
-      })).data
+      !(
+        await axios.get(`/api/secure/student/valid/number/${form.studentNumber}`, {
+          params: { excluded: excludedNumber },
+        })
+      ).data
     ) {
       notification.error({
         message: '学号无效',
         description: '该学号已存在，请输入新的学号。',
-      });
-      return false;
+      })
+      return false
     }
   } else {
-    if (
-      !(await axios.get(`/api/secure/student/valid/number/${form.studentNumber}`, {
-        headers: { Authorization: token },
-      })).data
-    ) {
+    if (!(await axios.get(`/api/secure/student/valid/number/${form.studentNumber}`, {})).data) {
       notification.error({
         message: '学号无效',
         description: '该学号已存在，请输入新的学号。',
-      });
-      return false;
+      })
+      return false
     }
   }
 
@@ -399,81 +411,67 @@ async function validateStudentForm(form: StudentForm, excludedNumber: string = '
     notification.error({
       message: '性别无效',
       description: '请选择一个有效的性别。',
-    });
-    return false;
+    })
+    return false
   }
 
-  if (
-    !form.phoneNumber ||
-    form.phoneNumber.length !== 11 ||
-    !/^\d{11}$/.test(form.phoneNumber)
-  ) {
+  if (!form.phoneNumber || form.phoneNumber.length !== 11 || !/^\d{11}$/.test(form.phoneNumber)) {
     notification.error({
       message: '电话号码无效',
       description: '电话号码必须为11位数字。',
-    });
-    return false;
+    })
+    return false
   }
 
   if (excludedPhone.length > 0) {
     if (
-      !(await axios.get(`/api/secure/student/valid/phone/${form.phoneNumber}`, {
-        params: { excluded: excludedPhone }, headers: { Authorization: token },
-      })).data
+      !(
+        await axios.get(`/api/secure/student/valid/phone/${form.phoneNumber}`, {
+          params: { excluded: excludedPhone },
+        })
+      ).data
     ) {
       notification.error({
         message: '电话号码无效',
         description: '该电话号码已存在，请输入新的电话号码。',
-      });
-      return false;
+      })
+      return false
     }
   } else {
-    if (
-      !(await axios.get(`/api/secure/student/valid/phone/${form.phoneNumber}`, {
-        headers: { Authorization: token },
-      })).data
-    ) {
+    if (!(await axios.get(`/api/secure/student/valid/phone/${form.phoneNumber}`, {})).data) {
       notification.error({
         message: '电话号码无效',
         description: '该电话号码已存在，请输入新的电话号码。',
-      });
-      return false;
+      })
+      return false
     }
   }
 
-  
   if (
     form.highestEducation &&
-    ![
-      "初中",
-      "高中",
-      "大专",
-      "本科",
-      "硕士",
-      "博士",
-    ].includes(form.highestEducation)
+    !['初中', '高中', '大专', '本科', '硕士', '博士'].includes(form.highestEducation)
   ) {
     notification.error({
       message: '最高学历无效',
       description: '请选择一个有效的最高学历。',
-    });
-    return false;
+    })
+    return false
   }
 
   if (!form.classId) {
     notification.error({
       message: '班级无效',
       description: '请选择一个有效的班级。',
-    });
-    return false;
+    })
+    return false
   }
 
-  return true;
+  return true
 }
 
 async function addStudent() {
   if (!(await validateStudentForm(addStudentForm.value))) {
-    return;
+    return
   }
   const form = new FormData()
   form.append('name', addStudentForm.value.name)
@@ -482,15 +480,7 @@ async function addStudent() {
   form.append('gender', addStudentForm.value.gender)
   form.append('phoneNumber', addStudentForm.value.phoneNumber)
   form.append('highestEducation', addStudentForm.value.highestEducation)
-  await axios.post(
-    '/api/secure/student',
-    form,
-    {
-      headers: {
-        Authorization: token,
-      },
-    },
-  )
+  await axios.post('/api/secure/student', form, {})
   isAddModalVisible.value = false
   addStudentForm.value = getStudentDefaultForm()
   fetchStudents()
@@ -514,7 +504,7 @@ async function editStudent(student: Student) {
     classId: student.classId,
     gender: student.gender,
     phoneNumber: student.phoneNumber,
-    highestEducation: student.highestEducation
+    highestEducation: student.highestEducation,
   }
   editStudentId.value = student.id
   isEditModalVisible.value = true
@@ -525,8 +515,14 @@ function handleEditCancel() {
 }
 
 async function handleEditOk() {
-  if (!(await validateStudentForm(editStudentForm.value, editStudentForm.value.studentNumber, editStudentForm.value.phoneNumber))) {
-    return;
+  if (
+    !(await validateStudentForm(
+      editStudentForm.value,
+      editStudentForm.value.studentNumber,
+      editStudentForm.value.phoneNumber,
+    ))
+  ) {
+    return
   }
   const form = new FormData()
   form.append('name', editStudentForm.value.name)
@@ -536,11 +532,7 @@ async function handleEditOk() {
   form.append('phoneNumber', editStudentForm.value.phoneNumber)
   form.append('highestEducation', editStudentForm.value.highestEducation)
 
-  await axios.put(`/api/secure/student/${editStudentId.value}`, form, {
-    headers: {
-      Authorization: token,
-    },
-  })
+  await axios.put(`/api/secure/student/${editStudentId.value}`, form, {})
   isEditModalVisible.value = false
   await fetchStudents()
 }
@@ -553,11 +545,7 @@ function deleteStudent(student: Student) {
 }
 
 async function handleDeleteOk() {
-  await axios.delete(`/api/secure/student/${editStudentId.value}`, {
-    headers: {
-      Authorization: token,
-    },
-  })
+  await axios.delete(`/api/secure/student/${editStudentId.value}`, {})
   isDeleteModalVisible.value = false
   await fetchStudents()
 }
@@ -576,15 +564,16 @@ function editDisciplinaryStudent(student: Student) {
 }
 
 async function handleEditDisciplinaryOk() {
-  await axios.put(`/api/secure/student/disciplinary/${disciplinaryStudentId.value}`, {}, {
-    headers: {
-      Authorization: token,
+  await axios.put(
+    `/api/secure/student/disciplinary/${disciplinaryStudentId.value}`,
+    {},
+    {
+      params: {
+        deltaDisciplinaryActions: 1,
+        deltaDisciplinaryPoints: disciplinaryPoints.value,
+      },
     },
-    params: {
-      deltaDisciplinaryActions: 1,
-      deltaDisciplinaryPoints: disciplinaryPoints.value,
-    }
-  })
+  )
   isDisciplinaryModalVisible.value = false
   await fetchStudents()
 }
@@ -593,7 +582,7 @@ function handleEditDisciplinaryCancel() {
   isDisciplinaryModalVisible.value = false
 }
 
-const isDeleteMultipleModalVisible = ref(false);
+const isDeleteMultipleModalVisible = ref(false)
 
 onMounted(async () => {
   await fetchClasses()

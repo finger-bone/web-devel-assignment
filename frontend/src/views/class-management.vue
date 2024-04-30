@@ -1,32 +1,42 @@
 <template>
   <div>
     <a-form @submit="handleSearch">
-      <a-form-item label="班级名称">
-        <a-input v-model:value="searchForm.name" placeholder="输入班级名称" />
-      </a-form-item>
-      <a-form-item label="开始时间">
-        <a-date-picker
-          v-model:value="searchForm.endTimeStart"
-          type="datetime"
-          placeholder="结课时间范围"
-        />
-      </a-form-item>
-      <a-form-item label="结束时间">
-        <a-date-picker
-          v-model:value="searchForm.endTimeEnd"
-          type="datetime"
-          placeholder="结课时间范围"
-        />
-      </a-form-item>
-      <a-form-item>
-        <a-button type="primary" html-type="submit">搜索</a-button>
-      </a-form-item>
+      <a-row :gutter="16">
+        <a-col :span="6">
+          <a-form-item label="班级名称">
+            <a-input v-model:value="searchForm.name" placeholder="输入班级名称" />
+          </a-form-item>
+        </a-col>
+        <a-col :span="6">
+          <a-form-item label="最早结束时间">
+            <a-date-picker
+              v-model:value="searchForm.endTimeStart"
+              type="datetime"
+              placeholder="结课时间范围"
+            />
+          </a-form-item>
+        </a-col>
+        <a-col :span="6">
+          <a-form-item label="结束时间">
+            <a-date-picker
+              v-model:value="searchForm.endTimeEnd"
+              type="datetime"
+              placeholder="结课时间范围"
+            />
+          </a-form-item>
+        </a-col>
+        <a-col :span="6">
+          <a-form-item>
+            <a-button type="primary" html-type="submit">搜索</a-button>
+          </a-form-item>
+        </a-col>
+      </a-row>
     </a-form>
     <a-button type="primary" class="my-2" @click="isAddModalVisible = true">添加班级</a-button>
-    <a-table :dataSource="classes" :columns="columns" rowKey="id">
+    <a-table :pagination="false" :dataSource="classes" :columns="columns" rowKey="id">
       <template #action="record">
-        <a-button class="mx-2" @click="handleEdit(record)">编辑</a-button>
-        <a-button class="mx-2" @click="handleRemove(record)">删除</a-button>
+        <a-button type="link" @click="handleEdit(record)">编辑</a-button>
+        <a-button type="link" @click="handleRemove(record)">删除</a-button>
       </template>
       <template #startTime="{ text }">
         {{ convertTimestamp(text) }}
@@ -38,6 +48,14 @@
         {{ teachers.find((teacher) => teacher.id === text)?.name }}
       </template>
     </a-table>
+    <a-pagination
+      v-model:current="current"
+      v-model:pageSize="pageSize"
+      show-size-changer
+      :total="500"
+      @showSizeChange="onShowSizeChange"
+      class="mt-2"
+    />
     <a-modal
       v-model:visible="isAddModalVisible"
       ok-text="Confirm"
@@ -85,16 +103,27 @@
     >
       <template #title>编辑班级</template>
       <a-form-item label="班级名称">
-        <a-input v-model:value="editForm.className" placeholder="请输入班级名称，如：2024第01期10班"/>
+        <a-input
+          v-model:value="editForm.className"
+          placeholder="请输入班级名称，如：2024第01期10班"
+        />
       </a-form-item>
       <a-form-item label="教室">
-        <a-input v-model:value="editForm.classroom" placeholder="请填写班级教室"/>
+        <a-input v-model:value="editForm.classroom" placeholder="请填写班级教室" />
       </a-form-item>
       <a-form-item label="开始时间">
-        <a-date-picker v-model:value="editForm.startTime" type="datetime" placeholder="选择开课时间"/>
+        <a-date-picker
+          v-model:value="editForm.startTime"
+          type="datetime"
+          placeholder="选择开课时间"
+        />
       </a-form-item>
       <a-form-item label="结束时间">
-        <a-date-picker v-model:value="editForm.endTime" type="datetime" placeholder="选择结课时间"/>
+        <a-date-picker
+          v-model:value="editForm.endTime"
+          type="datetime"
+          placeholder="选择结课时间"
+        />
       </a-form-item>
       <a-form-item label="班主任">
         <a-select v-model:value="editForm.headTeacherId" placeholder="请选择">
@@ -110,27 +139,21 @@
 <script lang="ts" setup>
 import { isClass, Class } from '@/interface/class'
 import { Employee, isEmployee } from '@/interface/employee'
-import { router } from '@/router'
-import { useUserStore } from '@/store/modules/user'
 import convertTimestamp from '@/utils/time'
 import notification from 'ant-design-vue/es/notification'
 import axios from 'axios'
 import dayjs, { Dayjs } from 'dayjs'
-import { Ref } from 'vue'
+import { Ref, watch } from 'vue'
 import { onMounted } from 'vue'
 import { ref } from 'vue'
 const isDeleteModalVisible = ref(false)
 function handleDeleteCancel() {
   isDeleteModalVisible.value = false
 }
-const classToDelete = ref(0)
+const classToDelete = ref(-1)
 async function handleDeleteOk() {
-  await axios.delete(`/api/secure/class/${classToDelete.value}`, {
-    headers: {
-      Authorization: token,
-    },
-  })
-  classToDelete.value = 0
+  await axios.delete(`/api/secure/class/${classToDelete.value}`, {})
+  classToDelete.value = -1
   isDeleteModalVisible.value = false
   await handleSearch()
 }
@@ -139,10 +162,22 @@ function handleEditCancel() {
   isEditModalVisible.value = false
 }
 
-const token = useUserStore().token
-if (!token || token.length === 0) {
-  router.push('/login')
+const current = ref(1)
+const pageSize = ref(10)
+
+function onShowSizeChange(newCurrent: number, newPageSize: number) {
+  current.value = newCurrent
+  pageSize.value = newPageSize
+  handleSearch()
 }
+
+watch(current, () => {
+  handleSearch()
+})
+
+watch(pageSize, () => {
+  handleSearch()
+})
 
 const columns = [
   { title: '班级编号', dataIndex: 'id', key: 'id' },
@@ -190,12 +225,12 @@ async function handleSearch() {
   if (searchForm.value.endTimeEnd !== null) {
     params.endTimeEnd = searchForm.value.endTimeEnd.toDate().getTime()
   }
+  params.start = current.value * pageSize.value - pageSize.value
+  params.end = current.value * pageSize.value
+
   classes.value = (
     await axios.get('/api/secure/class/search', {
       params: params,
-      headers: {
-        Authorization: token,
-      },
     })
   ).data.filter(isClass)
 }
@@ -239,8 +274,7 @@ async function validateClassForm(form: ClassForm, excluded: string = '') {
   ) {
     notification.error({
       message: '班级名称非法',
-      description:
-        '班级名称必须为4-30个字符，且只能包含中文、数字和字母。',
+      description: '班级名称必须为4-30个字符，且只能包含中文、数字和字母。',
     })
     return false
   }
@@ -251,9 +285,6 @@ async function validateClassForm(form: ClassForm, excluded: string = '') {
       await axios.get(`/api/secure/class/validate/${form.className}`, {
         params: {
           excluded: excluded,
-        },
-        headers: {
-          Authorization: token,
         },
       })
     ).data
@@ -274,8 +305,7 @@ async function validateClassForm(form: ClassForm, excluded: string = '') {
   ) {
     notification.error({
       message: '教室无效',
-      description:
-        '教室名称必须为1-20个字符，且只能包含中文、数字和字母。',
+      description: '教室名称必须为1-20个字符，且只能包含中文、数字和字母。',
     })
     return false
   }
@@ -323,7 +353,6 @@ async function getEmployees() {
     const response = await axios.get('/api/secure/employee/search', {
       headers: {
         'Content-Type': 'multipart/form-data',
-        Authorization: token,
       },
     })
     teachers.value = response.data.filter(isEmployee).map((employee: Employee) => {
@@ -365,7 +394,6 @@ async function handleAddOk() {
     await axios.post('/api/secure/class', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
-        Authorization: token,
       },
     })
     addForm.value = getDefaultClassForm()
@@ -416,9 +444,6 @@ async function handleEditOk() {
       `/api/secure/class/${classToEditID.value}`,
       {},
       {
-        headers: {
-          Authorization: token,
-        },
         params: params,
       },
     )

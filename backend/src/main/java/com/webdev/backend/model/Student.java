@@ -22,24 +22,35 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "students")
 public class Student {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String name;
-    private String studentNumber;
-    private Integer classId;
-    private String gender;
-    private String phoneNumber;
-    private String highestEducation;
-    private Integer disciplinaryActions;
-    private Integer disciplinaryPoints;
-    private Timestamp lastOperationTime;
 
-    @ManyToOne
-    @JoinColumn(name = "classId", insertable = false, updatable = false)
-    private Class classUnit;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    public void setLastOperationTime() {
-        this.lastOperationTime = new Timestamp(System.currentTimeMillis());
-    }
+	private String name;
+
+	private String studentNumber;
+
+	private Integer classId;
+
+	private String gender;
+
+	private String phoneNumber;
+
+	private String highestEducation;
+
+	private Integer disciplinaryActions;
+
+	private Integer disciplinaryPoints;
+
+	private Timestamp lastOperationTime;
+
+	@ManyToOne
+	@JoinColumn(name = "classId", insertable = false, updatable = false)
+	private Class classUnit;
+
+	public void setLastOperationTime() {
+		this.lastOperationTime = new Timestamp(System.currentTimeMillis());
+	}
+
 }

@@ -3,6 +3,5 @@ FROM maven:3.9.6-amazoncorretto-21
 RUN mkdir /backend
 WORKDIR /backend
 COPY . .
-
 # start the spring mvn project
-CMD ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+CMD mvn spring-boot:run -Dspring-boot.run.profiles=dev

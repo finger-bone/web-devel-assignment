@@ -11,22 +11,10 @@ services:
     expose:
       - 5432
 
-  pg_admin:
-    image: dpage/pgadmin4
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@domain.com
-      - PGADMIN_DEFAULT_PASSWORD=pwd
-    ports:
-      - "80:80"
-    depends_on:
-      - postgres
-  
   backend:
-    build: ./backend/
-    expose:
-      - 8080
-    ports:
-      - "8080:8080"
+    build: 
+      context: ./backend/
+      dockerfile: dockerfile.prod
     depends_on:
       - postgres
     develop:

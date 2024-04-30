@@ -12,47 +12,63 @@
       批量删除
     </a-button>
     <a-form @submit="handleSearch">
-      <a-form-item label="姓名">
-        <a-input v-model:value="searchForm.name" />
-      </a-form-item>
-      <a-form-item label="用户名">
-        <a-input v-model:value="searchForm.userName" />
-      </a-form-item>
-      <a-form-item label="性别">
-        <a-select v-model:value="searchForm.gender">
-          <a-select-option value="男性">男性</a-select-option>
-          <a-select-option value="女性">女性</a-select-option>
-        </a-select>
-      </a-form-item>
-      <a-form-item label="入职日期范围">
-        <a-date-picker
-          class="mx-2"
-          v-model:value="searchForm.hireDateStart"
-          type="date"
-          placeholder="开始时间"
-        />
-        <a-date-picker
-          class="mx-2"
-          v-model:value="searchForm.hireDateEnd"
-          type="date"
-          placeholder="结束时间"
-        />
-      </a-form-item>
-      <a-form-item label="职位">
-        <a-select v-model:value="searchForm.position">
-          <a-select-option v-for="position in validPositions" :key="position" :value="position">
-            {{ position }}
-          </a-select-option>
-        </a-select>
-      </a-form-item>
-      <a-form-item>
-        <a-button type="primary" html-type="submit">搜索</a-button>
-      </a-form-item>
+      <a-row :gutter="16">
+        <a-col :span="6">
+          <a-form-item label="姓名">
+            <a-input v-model:value="searchForm.name" />
+          </a-form-item>
+        </a-col>
+        <a-col :span="6">
+          <a-form-item label="用户名">
+            <a-input v-model:value="searchForm.userName" />
+          </a-form-item>
+        </a-col>
+        <a-col :span="6">
+          <a-form-item label="性别">
+            <a-select v-model:value="searchForm.gender">
+              <a-select-option value="男性">男性</a-select-option>
+              <a-select-option value="女性">女性</a-select-option>
+            </a-select>
+          </a-form-item>
+        </a-col>
+        <a-col :span="6">
+          <a-form-item label="职位">
+            <a-select v-model:value="searchForm.position">
+              <a-select-option v-for="position in validPositions" :key="position" :value="position">
+                {{ position }}
+              </a-select-option>
+            </a-select>
+          </a-form-item>
+        </a-col>
+      </a-row>
+      <a-row :gutter="16">
+        <a-col :span="12">
+          <a-form-item label="入职日期范围">
+            <a-date-picker
+              class="mx-2"
+              v-model:value="searchForm.hireDateStart"
+              type="date"
+              placeholder="最早入职时间"
+            />
+            <a-date-picker
+              class="mx-2"
+              v-model:value="searchForm.hireDateEnd"
+              type="date"
+              placeholder="最晚入职时间"
+            />
+          </a-form-item>
+        </a-col>
+        <a-col :span="12">
+          <a-form-item>
+            <a-button type="primary" html-type="submit">搜索</a-button>
+          </a-form-item>
+        </a-col>
+      </a-row>
     </a-form>
-    <a-table :dataSource="employees" :columns="columns" rowKey="id">
+    <a-table :pagination="false" :dataSource="employees" :columns="columns" rowKey="id">
       <template #action="record">
-        <a-button @click="handleEdit(record)" class="mx-2">编辑 </a-button>
-        <a-button @click="handleRemove(record)" class="mx-2">删除</a-button>
+        <a-button type="link" @click="handleEdit(record)">编辑 </a-button>
+        <a-button type="link" @click="handleRemove(record)">删除</a-button>
       </template>
       <template #lastOperationTime="{ text }">
         {{ convertTimestamp(text) }}
@@ -64,6 +80,14 @@
         <a-checkbox @change="(e: Event) => handleDeleteCandidates(e, text)" />
       </template>
     </a-table>
+    <a-pagination
+      v-model:current="current"
+      v-model:pageSize="pageSize"
+      show-size-changer
+      :total="500"
+      @showSizeChange="onShowSizeChange"
+      class="mt-2"
+    />
     <a-modal
       v-model:visible="isAddModalVisible"
       ok-text="添加"
@@ -106,9 +130,33 @@
         </a-select>
       </a-form-item>
       <a-form-item label="头像">
-        <a-upload v-model:value="addForm.image" :before-upload="addBeforeUpload">
-          <a-button :disabled="addForm.image != null"> <a-icon type="upload" /> 点击上传 </a-button>
-        </a-upload>
+        <div class="clearfix">
+          <a-upload
+            v-model:file-list="addImageList"
+            list-type="picture-card"
+            :beforeUpload="() => false"
+          >
+            <div v-if="addImageList.length < 1">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="feather feather-plus-circle"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="8"></line>
+                <line x1="8" y1="12" x2="16" y2="12"></line>
+              </svg>
+              <div style="margin-top: 8px">Upload</div>
+            </div>
+          </a-upload>
+        </div>
       </a-form-item>
     </a-modal>
     <a-modal
@@ -153,8 +201,30 @@
         </a-select>
       </a-form-item>
       <a-form-item label="头像">
-        <a-upload v-model:value="editForm.image" :before-upload="editBeforeUpload">
-          <a-button> <a-icon type="upload" /> 点击上传 </a-button>
+        <a-upload
+          v-model:file-list="editImageList"
+          list-type="picture-card"
+          :beforeUpload="() => false"
+        >
+          <div v-if="editImageList.length < 1">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="feather feather-plus-circle"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="8"></line>
+              <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+            <div style="margin-top: 8px">Upload</div>
+          </div>
         </a-upload>
       </a-form-item>
     </a-modal>
@@ -210,11 +280,7 @@ async function deleteMultiple() {
   try {
     await Promise.all(
       deleteCandidates.value.map(async (id) => {
-        await axios.delete(`/api/secure/employee/${id}`, {
-          headers: {
-            Authorization: token,
-          },
-        })
+        await axios.delete(`/api/secure/employee/${id}`, {})
       }),
     )
     deleteCandidates.value = []
@@ -233,7 +299,7 @@ function handleDeleteCandidates(e: Event, id: number) {
 }
 
 const isDeleteModalVisible = ref(false)
-const employeeToDelete = ref(0)
+const employeeToDelete = ref(-1)
 function handleDeleteOk() {
   deleteEmployee()
   isDeleteModalVisible.value = false
@@ -247,11 +313,7 @@ function handleRemove(record: Ref<Employee>) {
 }
 async function deleteEmployee() {
   try {
-    await axios.delete(`/api/secure/employee/${employeeToDelete.value}`, {
-      headers: {
-        Authorization: token,
-      },
-    })
+    await axios.delete(`/api/secure/employee/${employeeToDelete.value}`, {})
     handleSearch()
   } catch (error) {
     console.error('Failed to delete employee:', error)
@@ -261,7 +323,7 @@ async function deleteEmployee() {
 interface Employee {
   id: number
   name: string
-  userName: string
+  username: string
   gender: string
   image: string
   position: string | null
@@ -285,7 +347,19 @@ function imgSrc(blob: string) {
   return `data:image;base64,${blob}`
 }
 
-const searchForm = ref({
+const current = ref(1)
+const pageSize = ref(10)
+
+interface SearchForm {
+  name: string
+  userName: string
+  gender: string
+  hireDateStart: Date | null
+  hireDateEnd: Date | null
+  position: string
+}
+
+const searchForm = ref<SearchForm>({
   name: '',
   userName: '',
   gender: '',
@@ -300,7 +374,7 @@ const columns = [
   { title: '', dataIndex: 'id', key: 'checkbox', slots: { customRender: 'checkbox' } },
   { title: 'ID', dataIndex: 'id', key: 'id' },
   { title: '姓名', dataIndex: 'name', key: 'name' },
-  { title: '用户名', dataIndex: 'userName', key: 'userName' },
+  { title: '用户名', dataIndex: 'username', key: 'username' },
   { title: '头像', dataIndex: 'image', key: 'image', slots: { customRender: 'image' } },
   { title: '性别', dataIndex: 'gender', key: 'gender' },
   { title: '职位', dataIndex: 'position', key: 'position' },
@@ -358,12 +432,9 @@ async function validateEmployeeForm(form: EmployeeForm, excluded: string = '') {
 
   if (
     !(
-      await axios.get(`/api/secure/employee/validate/${form.userName}`, {
+      await axios.get(`/api/user/valid/${form.userName}`, {
         params: {
           excluded: excluded,
-        },
-        headers: {
-          Authorization: token,
         },
       })
     ).data
@@ -438,6 +509,7 @@ async function handleAddOk() {
     })
     addForm.value = getEmployeeDefaultForm()
     handleSearch()
+    addImageList.value = []
   } catch (error) {
     console.error('Failed to create employee:', error)
   }
@@ -449,22 +521,12 @@ function handleAddCancel() {
   isAddModalVisible.value = false
 }
 
-function addBeforeUpload(file: File) {
-  addForm.value.image = file
-  return false
-}
-
-function editBeforeUpload(file: File) {
-  editForm.value.image = file
-  return false
-}
-
 const editForm = ref(getEmployeeDefaultForm())
 const isEditModalVisible = ref(false)
 const editId = ref(0)
 
 async function handleEditOk() {
-  const previousName = employees.value.find((employee) => employee.id === editId.value)?.userName
+  const previousName = employees.value.find((employee) => employee.id === editId.value)?.username
   if (!(await validateEmployeeForm(editForm.value, previousName))) {
     return
   }
@@ -495,6 +557,10 @@ async function handleEditOk() {
     })
     editForm.value = getEmployeeDefaultForm()
     handleSearch()
+    editImageList.value = []
+    setTimeout(() => {
+      handleSearch()
+    }, 1000)
   } catch (error) {
     console.error('Failed to update employee:', error)
   }
@@ -505,7 +571,20 @@ async function handleEditOk() {
 function handleEditCancel() {
   isEditModalVisible.value = false
 }
-// API part
+
+function onShowSizeChange(newCurrent: number, newPageSize: number) {
+  current.value = newCurrent
+  pageSize.value = newPageSize
+  handleSearch()
+}
+
+watch(current, () => {
+  handleSearch()
+})
+
+watch(pageSize, () => {
+  handleSearch()
+})
 
 async function handleSearch() {
   const params: any = {}
@@ -529,6 +608,8 @@ async function handleSearch() {
   if (searchForm.value.position) {
     params.position = searchForm.value.position
   }
+  params.start = current.value * pageSize.value - pageSize.value
+  params.end = current.value * pageSize.value
 
   try {
     console.error(params)
@@ -553,11 +634,28 @@ function handleEdit(record: Ref<Employee>) {
   editId.value = r.id
   editForm.value = getEmployeeDefaultForm()
   editForm.value.name = r.name
-  editForm.value.userName = r.userName
+  editForm.value.userName = r.username
   editForm.value.position = r.position || ''
   editForm.value.hireDate = r.hireDate ? dayjs(r.hireDate, 'YYYY-MM-DD') : null
   editForm.value.gender = r.gender
   editForm.value.departmentId = r.departmentId || null
+
+  if (r.image != undefined && r.image != null && r.image.length > 0) {
+    const byteCharacters = atob(r.image)
+    const byteNumbers = new Array(byteCharacters.length)
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i)
+    }
+    const byteArray = new Uint8Array(byteNumbers)
+    const blob = new Blob([byteArray])
+    editImageList.value = [
+      {
+        originFileObj: blob,
+        url: URL.createObjectURL(blob),
+      },
+    ]
+  }
+
   isEditModalVisible.value = true
 }
 
@@ -565,13 +663,10 @@ import { isDepartment, Department } from '@/interface/department'
 import { useUserStore } from '@/store/modules/user'
 import { router } from '@/router'
 import { Ref } from 'vue'
+import { watch } from 'vue'
 
 async function fetchDepartments() {
-  const response = await axios.get('/api/secure/department', {
-    headers: {
-      Authorization: token,
-    },
-  })
+  const response = await axios.get('/api/secure/department', {})
   if (Array.isArray(response.data)) {
     departments.value = response.data.filter(isDepartment).map((department: Department) => {
       return {
@@ -581,6 +676,25 @@ async function fetchDepartments() {
     })
   }
 }
+
+const addImageList = ref<any>([])
+
+watch(addImageList, (newVal) => {
+  if (newVal.length > 0) {
+    addForm.value.image = newVal[0].originFileObj
+  } else {
+    addForm.value.image = null
+  }
+})
+
+const editImageList = ref<any>([])
+watch(editImageList, (newVal) => {
+  if (newVal.length > 0) {
+    editForm.value.image = newVal[0].originFileObj
+  } else {
+    editForm.value.image = null
+  }
+})
 
 onMounted(async () => {
   fetchDepartments()

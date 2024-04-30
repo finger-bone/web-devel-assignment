@@ -2,6 +2,14 @@
 import MainSider from './MainSider.vue'
 import MainHeader from './MainHeader.vue'
 import { Layout, LayoutContent } from 'ant-design-vue'
+import { router } from '@/router'
+import { useUserStore } from '@/store/modules/user'
+import axios from 'axios'
+const token = useUserStore().token
+if (!token || token.length === 0) {
+  router.push('/login')
+}
+axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
 </script>
 <template>
   <Layout class="main-layout-container">
@@ -16,7 +24,7 @@ import { Layout, LayoutContent } from 'ant-design-vue'
 </template>
 <style lang="less" scoped>
 .main-layout-container {
-  height: 100vh;
+  min-height: 100vh;
 
   .main-layout-content {
     margin: 24px;

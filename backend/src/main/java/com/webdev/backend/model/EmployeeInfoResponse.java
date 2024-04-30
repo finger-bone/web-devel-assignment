@@ -10,8 +10,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class EmployeeInfoResponse {
-    private String username;
-    private Long id;
-    private byte[] avatar;
-    private String role;
+
+	private String username;
+
+	private Long id;
+
+	private byte[] avatar;
+
+	private String role;
+
 }

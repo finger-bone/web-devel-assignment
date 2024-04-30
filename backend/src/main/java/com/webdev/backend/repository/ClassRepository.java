@@ -13,7 +13,9 @@ import java.util.Collection;
 import java.util.List;
 
 public interface ClassRepository extends JpaRepository<Class, Long>, JpaSpecificationExecutor<Class> {
-    Class findByClassName(String className);
 
-    List<Class> findByClassNameLike(String className);
+	Class findByClassName(String className);
+
+	List<Student> findByClassNameLike(String string);
+
 }

@@ -44,3 +44,30 @@ CREATE TABLE Students (
     disciplinary_points INT,
     last_operation_time TIMESTAMP
 );
+
+CREATE TABLE Courses (
+    id SERIAL PRIMARY KEY,
+    course_name TEXT,
+    course_credit INT,
+    last_operation_time TIMESTAMP,
+    start_time DATE,
+    end_time DATE
+);
+
+CREATE TABLE Course_Teacher (
+    id SERIAL,
+    course_id INT,
+    teacher_id INT,
+    FOREIGN KEY (course_id) REFERENCES Courses(id),
+    FOREIGN KEY (teacher_id) REFERENCES Employees(id)
+);
+
+CREATE TABLE Course_Class (
+    id SERIAL,
+    course_id INT,
+    class_id INT,
+    FOREIGN KEY (course_id) REFERENCES Courses(id),
+    FOREIGN KEY (class_id) REFERENCES Classes(id)
+);
+
+INSERT INTO Users (username, password, role) VALUES ('admin', '$2a$10$NJjcxU4NCRIymA83KDKfYeNxWVPG5ShXsmbhj3yUcR.CqwUkj7FkC', 'admin');
