@@ -9,7 +9,10 @@
     >
       批量删除
     </a-button>
-    <a-form @submit="handleSearch">
+    <a-form @submit="() => {
+      current = 1;
+      handleSearch();
+    }">
       <a-row :gutter="16">
         <a-col :span="4">
           <a-form-item label="姓名">
@@ -28,7 +31,12 @@
         </a-col>
         <a-col :span="4">
           <a-form-item label="最高学历">
-            <a-select v-model:value="searchForm.highestEducation">
+            <a-select
+              allowClear
+              :filterOption="filterOption"
+              show-search
+              v-model:value="searchForm.highestEducation"
+            >
               <a-select-option value="初中">初中</a-select-option>
               <a-select-option value="高中">高中</a-select-option>
               <a-select-option value="大专">大专</a-select-option>
@@ -40,7 +48,10 @@
         </a-col>
         <a-col :span="4">
           <a-form-item>
-            <a-button type="primary" @click="handleSearch">搜索</a-button>
+            <a-button type="primary" @click="() => {
+              current = 1;
+              handleSearch();
+            }">搜索</a-button>
           </a-form-item>
         </a-col>
       </a-row>
@@ -50,7 +61,7 @@
         <a-checkbox @change="(e: Event) => handleDeleteCandidates(e, text)" />
       </template>
       <template #lastOperationTime="{ text }">
-        {{ convertTimestamp(text) }}
+        {{ convertTimestampDateTime(text) }}
       </template>
       <template #class="{ text }">
         {{ classes.find((c) => c.id === text)?.name }}
@@ -62,6 +73,7 @@
       </template>
     </a-table>
     <a-pagination
+      show-quick-jumper
       v-model:current="current"
       v-model:pageSize="pageSize"
       show-size-changer
@@ -71,8 +83,8 @@
     />
     <a-modal
       v-model:visible="isAddModalVisible"
-      ok-text="Confirm"
-      cancel-text="Cancel"
+      ok-text="确认"
+      cancel-text="取消"
       @ok="handleAddOk"
       @cancel="handleAddCancel"
     >
@@ -84,14 +96,24 @@
         <a-input v-model:value="addStudentForm.studentNumber" />
       </a-form-item>
       <a-form-item label="班级">
-        <a-select v-model:value="addStudentForm.classId">
-          <a-select-option v-for="c in classes" :key="c.id" :value="c.id">{{
+        <a-select
+          allowClear
+          :filterOption="filterOption"
+          show-search
+          v-model:value="addStudentForm.classId"
+        >
+          <a-select-option v-for="c in classes" :key="c.name" :value="c.id">{{
             c.name
           }}</a-select-option>
         </a-select>
       </a-form-item>
       <a-form-item label="性别">
-        <a-select v-model:value="addStudentForm.gender">
+        <a-select
+          allowClear
+          :filterOption="filterOption"
+          show-search
+          v-model:value="addStudentForm.gender"
+        >
           <a-select-option value="男性">男性</a-select-option>
           <a-select-option value="女性">女性</a-select-option>
         </a-select>
@@ -100,7 +122,12 @@
         <a-input v-model:value="addStudentForm.phoneNumber" />
       </a-form-item>
       <a-form-item label="最高学历">
-        <a-select v-model:value="addStudentForm.highestEducation">
+        <a-select
+          allowClear
+          :filterOption="filterOption"
+          show-search
+          v-model:value="addStudentForm.highestEducation"
+        >
           <a-select-option value="初中">初中</a-select-option>
           <a-select-option value="高中">高中</a-select-option>
           <a-select-option value="大专">大专</a-select-option>
@@ -117,7 +144,7 @@
       @ok="handleEditOk"
       @cancel="handleEditCancel"
     >
-      <template #title>Edit Student</template>
+      <template #title>编辑学员信息</template>
       <a-form-item label="姓名">
         <a-input v-model:value="editStudentForm.name" />
       </a-form-item>
@@ -125,14 +152,24 @@
         <a-input v-model:value="editStudentForm.studentNumber" />
       </a-form-item>
       <a-form-item label="班级">
-        <a-select v-model:value="editStudentForm.classId">
-          <a-select-option v-for="c in classes" :key="c.id" :value="c.id">{{
+        <a-select
+          allowClear
+          :filterOption="filterOption"
+          show-search
+          v-model:value="editStudentForm.classId"
+        >
+          <a-select-option v-for="c in classes" :key="c.name" :value="c.id">{{
             c.name
           }}</a-select-option>
         </a-select>
       </a-form-item>
       <a-form-item label="性别">
-        <a-select v-model:value="editStudentForm.gender">
+        <a-select
+          allowClear
+          :filterOption="filterOption"
+          show-search
+          v-model:value="editStudentForm.gender"
+        >
           <a-select-option value="男性">男性</a-select-option>
           <a-select-option value="女性">女性</a-select-option>
         </a-select>
@@ -141,7 +178,12 @@
         <a-input v-model:value="editStudentForm.phoneNumber" />
       </a-form-item>
       <a-form-item label="最高学历">
-        <a-select v-model:value="editStudentForm.highestEducation">
+        <a-select
+          allowClear
+          :filterOption="filterOption"
+          show-search
+          v-model:value="editStudentForm.highestEducation"
+        >
           <a-select-option value="初中">初中</a-select-option>
           <a-select-option value="高中">高中</a-select-option>
           <a-select-option value="大专">大专</a-select-option>
@@ -168,15 +210,15 @@
       @ok="handleEditDisciplinaryOk"
       @cancel="handleEditDisciplinaryCancel"
     >
-      <template #title>Disciplinary</template>
+      <template #title>违纪处理</template>
       <a-form-item label="违纪扣分">
         <a-input-number v-model:value="disciplinaryPoints" :min="0" />
       </a-form-item>
     </a-modal>
     <a-modal
       v-model:visible="isDeleteMultipleModalVisible"
-      ok-text="Confirm"
-      cancel-text="Cancel"
+      ok-text="确认"
+      cancel-text="取消"
       @ok="handleDeleteMultipleOk"
       @cancel="handleDeleteMultipleCancel"
     >
@@ -189,9 +231,10 @@
 <script lang="ts" setup>
 import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
-import convertTimestamp from '@/utils/time'
+import { convertTimestampDateTime } from '@/utils/time'
 import { type Student } from '@/interface/student'
 import { Class, isClass } from '@/interface/class'
+import { filterOption } from '@/utils/filterOption'
 import { notification } from 'ant-design-vue'
 
 const deleteCandidates = ref<Array<number>>([])
@@ -299,11 +342,6 @@ async function handleSearch() {
   const response = await axios.get('/api/secure/student/search', {
     params: params,
   })
-  students.value = response.data
-}
-
-async function fetchStudents() {
-  const response = await axios.get('/api/secure/student/search', {})
   students.value = response.data
 }
 
@@ -483,7 +521,7 @@ async function addStudent() {
   await axios.post('/api/secure/student', form, {})
   isAddModalVisible.value = false
   addStudentForm.value = getStudentDefaultForm()
-  fetchStudents()
+  handleSearch()
 }
 
 async function handleAddOk() {
@@ -515,11 +553,12 @@ function handleEditCancel() {
 }
 
 async function handleEditOk() {
+  const previousStudent = students.value.find((s) => s.id === editStudentId.value)
   if (
     !(await validateStudentForm(
       editStudentForm.value,
-      editStudentForm.value.studentNumber,
-      editStudentForm.value.phoneNumber,
+      previousStudent?.studentNumber,
+      previousStudent?.phoneNumber,
     ))
   ) {
     return
@@ -534,7 +573,7 @@ async function handleEditOk() {
 
   await axios.put(`/api/secure/student/${editStudentId.value}`, form, {})
   isEditModalVisible.value = false
-  await fetchStudents()
+  handleSearch()
 }
 
 const isDeleteModalVisible = ref(false)
@@ -547,7 +586,7 @@ function deleteStudent(student: Student) {
 async function handleDeleteOk() {
   await axios.delete(`/api/secure/student/${editStudentId.value}`, {})
   isDeleteModalVisible.value = false
-  await fetchStudents()
+  handleSearch()
 }
 
 function handleDeleteCancel() {
@@ -575,7 +614,8 @@ async function handleEditDisciplinaryOk() {
     },
   )
   isDisciplinaryModalVisible.value = false
-  await fetchStudents()
+  disciplinaryPoints.value = 0
+  handleSearch()
 }
 
 function handleEditDisciplinaryCancel() {
@@ -586,6 +626,6 @@ const isDeleteMultipleModalVisible = ref(false)
 
 onMounted(async () => {
   await fetchClasses()
-  await fetchStudents()
+  handleSearch()
 })
 </script>

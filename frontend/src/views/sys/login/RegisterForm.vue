@@ -30,8 +30,8 @@ const handleRegister: FormProps['onFinish'] = async (values: RegisterParams) => 
   loading.value = true
   if (values.password !== values.confirmPassword) {
     notification.error({
-      message: 'Error',
-      description: 'Password and Confirm Password must be same',
+      message: '错误',
+      description: '密码和确认密码必须相同',
     })
     loading.value = false
     return
@@ -49,20 +49,20 @@ const handleRegister: FormProps['onFinish'] = async (values: RegisterParams) => 
     )
     if (res.data) {
       notification.success({
-        message: 'Success',
-        description: 'User registered successfully',
+        message: '成功',
+        description: '用户已注册成功',
       })
       handleBackLogin()
     } else {
       notification.error({
-        message: 'Error',
-        description: 'User already exists',
+        message: '错误',
+        description: '用户名已存在',
       })
     }
   } catch (error) {
     notification.error({
-      message: 'Error',
-      description: 'Error while registering user',
+      message: '错误',
+      description: '未知错误',
     })
   }
 }

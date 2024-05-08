@@ -58,6 +58,7 @@ CREATE TABLE Course_Teacher (
     id SERIAL,
     course_id INT,
     teacher_id INT,
+    UNIQUE (course_id, teacher_id),
     FOREIGN KEY (course_id) REFERENCES Courses(id),
     FOREIGN KEY (teacher_id) REFERENCES Employees(id)
 );
@@ -66,6 +67,7 @@ CREATE TABLE Course_Class (
     id SERIAL,
     course_id INT,
     class_id INT,
+    UNIQUE (course_id, class_id),
     FOREIGN KEY (course_id) REFERENCES Courses(id),
     FOREIGN KEY (class_id) REFERENCES Classes(id)
 );

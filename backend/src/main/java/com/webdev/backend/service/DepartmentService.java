@@ -6,6 +6,7 @@ import com.webdev.backend.repository.DepartmentRepository;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,7 +20,6 @@ public class DepartmentService {
 	}
 
 	public Department updateDepartment(Department department) {
-		System.err.println(department);
 		return departmentRepository.save(department);
 	}
 
@@ -28,7 +28,7 @@ public class DepartmentService {
 	}
 
 	public List<Department> getDepartments() {
-		return departmentRepository.findAll();
+		return departmentRepository.findAll(Sort.by(Sort.Direction.DESC, "lastOperationTime"));
 	}
 
 	public Department getDepartmentByDepartmentName(String departmentName) {

@@ -1,6 +1,7 @@
 package com.webdev.backend.controller;
 
 import com.webdev.backend.model.Student;
+import com.webdev.backend.service.ClassService;
 import com.webdev.backend.service.StudentService;
 
 import org.springframework.util.StringUtils;
@@ -62,6 +63,9 @@ public class StudentController {
 	@Autowired
 	private StudentService studentService;
 
+	@Autowired
+	private ClassService classService;
+
 	@GetMapping("/search")
 	@Operation(summary = "搜索学生", description = "根据提供的参数搜索学生。")
 	public List<Student> searchStudents(@RequestParam(required = false) String name,
@@ -74,7 +78,7 @@ public class StudentController {
 
 	@PostMapping
 	@Operation(summary = "创建新学生", description = "提供学生信息来创建新学生。")
-	public void createStudent(@RequestParam String name, @RequestParam String studentNumber,
+	public Student createStudent(@RequestParam String name, @RequestParam String studentNumber,
 			@RequestParam Integer classId, @RequestParam String gender, @RequestParam String phoneNumber,
 			@RequestParam String highestEducation) {
 		var student = new Student();
@@ -90,7 +94,11 @@ public class StudentController {
 		if(!validateStudentForm(student, null, null)) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "学生信息无效");
 		}
+		student.setClassUnit(classService.getClassById(
+			classId.longValue()
+		));
 		studentService.addStudent(student);
+		return student;
 	}
 
 	@DeleteMapping("/{id}")

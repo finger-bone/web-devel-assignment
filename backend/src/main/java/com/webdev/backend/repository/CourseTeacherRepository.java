@@ -14,4 +14,6 @@ public interface CourseTeacherRepository
 
 	List<CourseTeacher> findByCourseId(Long courseId);
 
+    List<CourseTeacher> findByTeacherId(Long teacherId);
+
 }

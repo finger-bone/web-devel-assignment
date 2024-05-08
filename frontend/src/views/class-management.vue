@@ -1,6 +1,9 @@
 <template>
   <div>
-    <a-form @submit="handleSearch">
+    <a-form @submit="() => {
+      current = 1;
+      handleSearch();
+    }">
       <a-row :gutter="16">
         <a-col :span="6">
           <a-form-item label="班级名称">
@@ -39,16 +42,20 @@
         <a-button type="link" @click="handleRemove(record)">删除</a-button>
       </template>
       <template #startTime="{ text }">
-        {{ convertTimestamp(text) }}
+        {{ convertTimestampDate(text) }}
       </template>
       <template #endTime="{ text }">
-        {{ convertTimestamp(text) }}
+        {{ convertTimestampDate(text) }}
       </template>
       <template #headTeacherId="{ text }">
         {{ teachers.find((teacher) => teacher.id === text)?.name }}
       </template>
+      <template #lastOperationTime="{ text }">
+        {{ convertTimestampDateTime(text) }}
+      </template>
     </a-table>
     <a-pagination
+      show-quick-jumper
       v-model:current="current"
       v-model:pageSize="pageSize"
       show-size-changer
@@ -58,8 +65,8 @@
     />
     <a-modal
       v-model:visible="isAddModalVisible"
-      ok-text="Confirm"
-      cancel-text="Cancel"
+      ok-text="确定"
+      cancel-text="取消"
       @ok="handleAddOk"
       @cancel="handleAddCancel"
     >
@@ -67,7 +74,7 @@
       <a-form-item label="班级名称">
         <a-input v-model:value="addForm.className" />
       </a-form-item>
-      <a-form-item label="教室">
+      <a-form-item label="教室（可选）">
         <a-input v-model:value="addForm.classroom" />
       </a-form-item>
       <a-form-item label="开始时间">
@@ -77,8 +84,13 @@
         <a-date-picker v-model:value="addForm.endTime" type="datetime" />
       </a-form-item>
       <a-form-item label="班主任">
-        <a-select v-model:value="addForm.headTeacherId">
-          <a-select-option v-for="teacher in teachers" :key="teacher.id" :value="teacher.id">
+        <a-select
+          allowClear
+          :filterOption="filterOption"
+          show-search
+          v-model:value="addForm.headTeacherId"
+        >
+          <a-select-option v-for="teacher in teachers" :key="teacher.name" :value="teacher.id">
             {{ teacher.name }}
           </a-select-option>
         </a-select>
@@ -87,7 +99,7 @@
     <a-modal
       v-model:visible="isDeleteModalVisible"
       ok-text="确认"
-      cancel-text="删除"
+      cancel-text="取消"
       @ok="handleDeleteOk"
       @cancel="handleDeleteCancel"
     >
@@ -126,8 +138,14 @@
         />
       </a-form-item>
       <a-form-item label="班主任">
-        <a-select v-model:value="editForm.headTeacherId" placeholder="请选择">
-          <a-select-option v-for="teacher in teachers" :key="teacher.id" :value="teacher.id">
+        <a-select
+          allowClear
+          :filterOption="filterOption"
+          show-search
+          v-model:value="editForm.headTeacherId"
+          placeholder="请选择"
+        >
+          <a-select-option v-for="teacher in teachers" :key="teacher.name" :value="teacher.id">
             {{ teacher.name }}
           </a-select-option>
         </a-select>
@@ -139,13 +157,15 @@
 <script lang="ts" setup>
 import { isClass, Class } from '@/interface/class'
 import { Employee, isEmployee } from '@/interface/employee'
-import convertTimestamp from '@/utils/time'
+import { convertTimestampDate } from '@/utils/time'
 import notification from 'ant-design-vue/es/notification'
 import axios from 'axios'
 import dayjs, { Dayjs } from 'dayjs'
 import { Ref, watch } from 'vue'
 import { onMounted } from 'vue'
 import { ref } from 'vue'
+import { filterOption } from '@/utils/filterOption'
+import { convertTimestampDateTime } from '@/utils/time'
 const isDeleteModalVisible = ref(false)
 function handleDeleteCancel() {
   isDeleteModalVisible.value = false
@@ -195,6 +215,12 @@ const columns = [
     dataIndex: 'headTeacherId',
     key: 'headTeacherId',
     slots: { customRender: 'headTeacherId' },
+  },
+  {
+    title: '最后操作时间',
+    dataIndex: 'lastOperationTime',
+    key: 'lastOperationTime',
+    slots: { customRender: 'lastOperationTime' },
   },
   {
     title: '操作',
@@ -282,7 +308,7 @@ async function validateClassForm(form: ClassForm, excluded: string = '') {
   // Validate if class name is unique
   if (
     !(
-      await axios.get(`/api/secure/class/validate/${form.className}`, {
+      await axios.get(`/api/secure/class/valid/${form.className}`, {
         params: {
           excluded: excluded,
         },
@@ -298,10 +324,8 @@ async function validateClassForm(form: ClassForm, excluded: string = '') {
 
   // Validate classroom
   if (
-    form.classroom &&
-    (form.classroom.length < 1 ||
-      form.classroom.length > 20 ||
-      !/^[\u4e00-\u9fa5a-zA-Z0-9]+$/.test(form.classroom))
+    (form.classroom.length > 20 ||
+      !/^[\u4e00-\u9fa5a-zA-Z0-9]*$/.test(form.classroom))
   ) {
     notification.error({
       message: '教室无效',
@@ -355,12 +379,17 @@ async function getEmployees() {
         'Content-Type': 'multipart/form-data',
       },
     })
-    teachers.value = response.data.filter(isEmployee).map((employee: Employee) => {
-      return {
-        name: employee.name,
-        id: employee.id,
-      }
-    })
+    teachers.value = response.data
+      .filter(isEmployee)
+      .filter((employee: Employee) => {
+        return employee.position == '班主任'
+      })
+      .map((employee: Employee) => {
+        return {
+          name: employee.name,
+          id: employee.id,
+        }
+      })
   } catch (error) {
     console.error('Failed to search employees:', error)
   }

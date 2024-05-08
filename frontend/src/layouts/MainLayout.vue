@@ -10,6 +10,23 @@ if (!token || token.length === 0) {
   router.push('/login')
 }
 axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+
+function removeCredentials() {
+  axios.defaults.headers.common['Authorization'] = ''
+  useUserStore().logout()
+  router.push('/login')
+}
+
+axios
+  .get('/api/secure/user/ping')
+  .then((res) => {
+    if (res.data != 'pong') {
+      removeCredentials()
+    }
+  })
+  .catch((_) => {
+    removeCredentials()
+  })
 </script>
 <template>
   <Layout class="main-layout-container">

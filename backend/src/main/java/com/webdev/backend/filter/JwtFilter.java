@@ -58,17 +58,10 @@ public class JwtFilter implements Filter {
 			}
 			Integer id = userData.get("id").asInt();
 			String username = userData.get("username").asString();
-			String password = userData.get("password").asString();
+			// String password = userData.get("password").asString();
 			String role = userData.get("role").asString();
-			// if (!role.equals("admin")) {
-			// // set to http code to unauthorized
-			// response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-			// return;
-			// }
-			// 拦截器 拿到用户信息，放到request中
 			request.setAttribute("id", id);
 			request.setAttribute("username", username);
-			request.setAttribute("password", password);
 			request.setAttribute("role", role);
 			chain.doFilter(req, res);
 		}

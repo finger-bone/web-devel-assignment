@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -44,7 +45,7 @@ public class ClassService {
 				predicates.add(cb.lessThanOrEqualTo(root.get("endTime"), endTimeEnd));
 			}
 			return cb.and(predicates.toArray(new Predicate[0]));
-		});
+		}, Sort.by(Sort.Direction.DESC, "lastOperationTime"));
 		return classes.subList(Math.min(start.intValue(), classes.size()), Math.min(end.intValue(), classes.size()));
 	}
 
@@ -52,4 +53,7 @@ public class ClassService {
 		return classRepository.findByClassName(className);
 	}
 
+	public Class getClassById(Long id) {
+		return classRepository.findById(id).orElse(null);
+	}
 }

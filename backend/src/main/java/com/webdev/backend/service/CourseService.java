@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.webdev.backend.model.Course;
@@ -96,7 +97,7 @@ public class CourseService {
 				predicates.add(cb.lessThanOrEqualTo(root.get("endTime"), endTimeEnd));
 			}
 			return cb.and(predicates.toArray(new Predicate[0]));
-		});
+		}, Sort.by(Sort.Direction.DESC, "lastOperationTime"));
 		return courses.subList(Math.min(start.intValue(), courses.size()), Math.min(end.intValue(), courses.size()));
 	}
 
@@ -106,10 +107,15 @@ public class CourseService {
 		return employeeRepository.findAllById(teacherIds);
 	}
 
+	public List<Course> getTeacherAssignedCourse(Long teacherId) {
+		List<CourseTeacher> courseTeachers = courseTeacherRepository.findByTeacherId(teacherId);
+		List<Long> courseIds = courseTeachers.stream().map(CourseTeacher::getCourseId).collect(Collectors.toList());
+		return courseRepository.findAllById(courseIds);
+	}
+
 	public List<Class> getClasses(Long courseId) {
 		List<CourseClass> courseClasses = courseClassRepository.findByCourseId(courseId);
 		List<Long> classIds = courseClasses.stream().map(CourseClass::getClassId).collect(Collectors.toList());
 		return classRepository.findAllById(classIds);
 	}
-
 }

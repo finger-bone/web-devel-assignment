@@ -38,4 +38,9 @@ public class UserService {
 		);
     }
 
+	public void resetPassword(String username, String newPassword) {
+		User user = userRepository.findByUsername(username);
+		user.setPassword(BCrypt.hashpw(newPassword, BCrypt.gensalt()));
+		userRepository.save(user);
+	}
 }

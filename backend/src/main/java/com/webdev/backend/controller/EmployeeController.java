@@ -157,6 +157,7 @@ public class EmployeeController {
 	@DeleteMapping("/{id}")
 	@Operation(summary = "删除员工", description = "根据提供的ID删除员工。")
 	public void deleteEmployee(@PathVariable Long id) {
+		userService.deleteUser(employeeService.getEmployeeById(id).getUsername());
 		employeeService.deleteEmployee(id);
 	}
 

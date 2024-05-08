@@ -35,6 +35,8 @@ public class Class {
 
 	private Integer headTeacherId;
 
+	private Timestamp lastOperationTime;
+
 	public void setEndTime(Timestamp endTime) {
 		this.endTime = new Date(endTime.getTime());
 	}
@@ -43,4 +45,7 @@ public class Class {
 		this.startTime = new Date(startTime.getTime());
 	}
 
+	public void setLastOperationTime() {
+		this.lastOperationTime = new Timestamp(System.currentTimeMillis());
+	}
 }

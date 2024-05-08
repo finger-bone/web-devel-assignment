@@ -37,10 +37,10 @@ export function getUserInfo() {
       .then((res) => {
         resolve({
           userId: res.data.id ?? 0,
-          username: '',
+          username: res.data.username,
           avatar: res.data.avatar == null ? '' : `data:image;base64,${res.data.avatar}`,
           desc: '',
-          realName: '',
+          realName: res.data.username,
           roles: ['admin'],
         })
       })

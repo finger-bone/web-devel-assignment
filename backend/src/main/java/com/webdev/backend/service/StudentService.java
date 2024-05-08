@@ -7,6 +7,7 @@ import com.webdev.backend.repository.StudentRepository;
 import jakarta.persistence.criteria.Predicate;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ public class StudentService {
 				}
 			}
 			return cb.and(predicates.toArray(new Predicate[0]));
-		});
+		}, Sort.by(Sort.Direction.DESC, "lastOperationTime"));
 		return students.subList(Math.min(start.intValue(), students.size()), Math.min(end.intValue(), students.size()));
 	}
 

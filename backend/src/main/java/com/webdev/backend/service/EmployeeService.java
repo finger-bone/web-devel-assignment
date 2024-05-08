@@ -6,6 +6,7 @@ import com.webdev.backend.repository.EmployeeRepository;
 import jakarta.persistence.criteria.Predicate;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -55,7 +56,7 @@ public class EmployeeService {
 				predicates.add(cb.like(root.get("position"), "%" + position + "%"));
 			}
 			return cb.and(predicates.toArray(new Predicate[0]));
-		});
+		}, Sort.by(Sort.Direction.DESC, "lastOperationTime"));
 		return employees.subList(Math.min(start.intValue(), employees.size()),
 				Math.min(end.intValue(), employees.size()));
 	}

@@ -62,20 +62,27 @@ const positionOption = ref<any>({
     left: 'center',
   },
   tooltip: {
-    trigger: 'item',
-    formatter: '{a} <br/>{b} : {c} ({d}%)',
+    trigger: 'axis',
+    axisPointer: {
+      type: 'shadow',
+    },
+    formatter: '{a} <br/>{b} : {c}',
   },
   legend: {
-    orient: 'vertical',
-    left: 'left',
     data: [],
+  },
+  xAxis: {
+    type: 'category',
+    data: [],
+  },
+  yAxis: {
+    type: 'value',
   },
   series: [
     {
       name: '职位',
-      type: 'pie',
-      radius: ['30%', '50%'],
-      avoidLabelOverlap: false,
+      type: 'bar',
+      data: [],
       itemStyle: {
         borderRadius: 10,
         borderColor: '#fff',
@@ -88,7 +95,6 @@ const positionOption = ref<any>({
           shadowColor: 'rgba(0, 0, 0, 0.5)',
         },
       },
-      data: [],
     },
   ],
 })
@@ -101,6 +107,7 @@ onMounted(async () => {
   const positionResponse = await axios.get('/api/secure/employee/statistics/position', {})
   const positionData = responseToDataOptions(positionResponse)
   positionOption.value.legend.data = positionData.map((item) => item.name)
-  positionOption.value.series[0].data = positionData
+  positionOption.value.xAxis.data = positionData.map((item) => item.name)
+  positionOption.value.series[0].data = positionData.map((item) => item.value)
 })
 </script>

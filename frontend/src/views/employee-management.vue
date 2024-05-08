@@ -11,7 +11,10 @@
     >
       批量删除
     </a-button>
-    <a-form @submit="handleSearch">
+    <a-form @submit="() => {
+      current = 1;
+      handleSearch();
+    }">
       <a-row :gutter="16">
         <a-col :span="6">
           <a-form-item label="姓名">
@@ -25,7 +28,12 @@
         </a-col>
         <a-col :span="6">
           <a-form-item label="性别">
-            <a-select v-model:value="searchForm.gender">
+            <a-select
+              allowClear
+              :filterOption="filterOption"
+              show-search
+              v-model:value="searchForm.gender"
+            >
               <a-select-option value="男性">男性</a-select-option>
               <a-select-option value="女性">女性</a-select-option>
             </a-select>
@@ -33,7 +41,12 @@
         </a-col>
         <a-col :span="6">
           <a-form-item label="职位">
-            <a-select v-model:value="searchForm.position">
+            <a-select
+              allowClear
+              :filterOption="filterOption"
+              show-search
+              v-model:value="searchForm.position"
+            >
               <a-select-option v-for="position in validPositions" :key="position" :value="position">
                 {{ position }}
               </a-select-option>
@@ -71,7 +84,7 @@
         <a-button type="link" @click="handleRemove(record)">删除</a-button>
       </template>
       <template #lastOperationTime="{ text }">
-        {{ convertTimestamp(text) }}
+        {{ convertTimestampDateTime(text) }}
       </template>
       <template #image="{ text }">
         <a-image :src="imgSrc(text)" :width="64" />
@@ -81,6 +94,7 @@
       </template>
     </a-table>
     <a-pagination
+      show-quick-jumper
       v-model:current="current"
       v-model:pageSize="pageSize"
       show-size-changer
@@ -103,33 +117,48 @@
         <a-input v-model:value="addForm.userName" />
       </a-form-item>
       <a-form-item label="性别">
-        <a-select v-model:value="addForm.gender">
+        <a-select
+          allowClear
+          :filterOption="filterOption"
+          show-search
+          v-model:value="addForm.gender"
+        >
           <a-select-option value="男性">男性</a-select-option>
           <a-select-option value="女性">女性</a-select-option>
         </a-select>
       </a-form-item>
-      <a-form-item label="职位">
-        <a-select v-model:value="addForm.position">
+      <a-form-item label="职位（可选）">
+        <a-select
+          allowClear
+          :filterOption="filterOption"
+          show-search
+          v-model:value="addForm.position"
+        >
           <a-select-option v-for="position in validPositions" :key="position" :value="position">
             {{ position }}
           </a-select-option>
         </a-select>
       </a-form-item>
-      <a-form-item label="入职日期">
+      <a-form-item label="入职日期（可选）">
         <a-date-picker v-model:value="addForm.hireDate" type="date" />
       </a-form-item>
-      <a-form-item label="部门">
-        <a-select v-model:value="addForm.departmentId">
+      <a-form-item label="部门（可选）">
+        <a-select
+          allowClear
+          :filterOption="filterOption"
+          show-search
+          v-model:value="addForm.departmentId"
+        >
           <a-select-option
             v-for="department in departments"
-            :key="department.id"
+            :key="department.departmentName"
             :value="department.id"
           >
             {{ department.departmentName }}
           </a-select-option>
         </a-select>
       </a-form-item>
-      <a-form-item label="头像">
+      <a-form-item label="头像（可选）">
         <div class="clearfix">
           <a-upload
             v-model:file-list="addImageList"
@@ -174,33 +203,48 @@
         <a-input v-model:value="editForm.userName" />
       </a-form-item>
       <a-form-item label="性别">
-        <a-select v-model:value="editForm.gender">
+        <a-select
+          allowClear
+          :filterOption="filterOption"
+          show-search
+          v-model:value="editForm.gender"
+        >
           <a-select-option value="男性">男性</a-select-option>
           <a-select-option value="女性">女性</a-select-option>
         </a-select>
       </a-form-item>
-      <a-form-item label="职位">
-        <a-select v-model:value="editForm.position">
+      <a-form-item label="职位（可选）">
+        <a-select
+          allowClear
+          :filterOption="filterOption"
+          show-search
+          v-model:value="editForm.position"
+        >
           <a-select-option v-for="position in validPositions" :key="position" :value="position">
             {{ position }}
           </a-select-option>
         </a-select>
       </a-form-item>
-      <a-form-item label="入职日期">
+      <a-form-item label="入职日期（可选）">
         <a-date-picker v-model:value="editForm.hireDate" type="date" />
       </a-form-item>
-      <a-form-item label="部门">
-        <a-select v-model:value="editForm.departmentId">
+      <a-form-item label="部门（可选）">
+        <a-select
+          allowClear
+          :filterOption="filterOption"
+          show-search
+          v-model:value="editForm.departmentId"
+        >
           <a-select-option
             v-for="department in departments"
-            :key="department.id"
+            :key="department.departmentName"
             :value="department.id"
           >
             {{ department.departmentName }}
           </a-select-option>
         </a-select>
       </a-form-item>
-      <a-form-item label="头像">
+      <a-form-item label="头像（可选）">
         <a-upload
           v-model:file-list="editImageList"
           list-type="picture-card"
@@ -253,8 +297,9 @@
 
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue'
-import convertTimestamp from '@/utils/time'
+import { convertTimestampDateTime } from '@/utils/time'
 import axios from 'axios'
+import { filterOption } from '@/utils/filterOption'
 
 const token = useUserStore().token
 if (!token || token.length === 0) {

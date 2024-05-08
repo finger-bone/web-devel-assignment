@@ -1,5 +1,8 @@
 <template>
-  <a-form @submit="handleSearch">
+  <a-form @submit="() => {
+    current = 1
+    handleSearch();
+  }">
     <a-row :gutter="18">
       <a-col :span="5">
         <a-form-item label="课程名称">
@@ -31,10 +34,10 @@
 
   <a-table :columns="columns" :dataSource="courses" rowKey="id" :pagination="false">
     <template #startTime="{ text }">
-      {{ convertTimestamp(text) }}
+      {{ convertTimestampDate(text) }}
     </template>
     <template #endTime="{ text }">
-      {{ convertTimestamp(text) }}
+      {{ convertTimestampDate(text) }}
     </template>
     <template #teachers="{ text }">
       <div v-for="each in courseIdToTeachers.get(text)">
@@ -60,6 +63,7 @@
     </template>
   </a-table>
   <a-pagination
+    show-quick-jumper
     v-model:current="current"
     v-model:pageSize="pageSize"
     show-size-changer
@@ -103,8 +107,8 @@
     </a-form>
     <a-form>
       <a-form-item label="选择教师">
-        <a-select v-model:value="addTeacherId">
-          <a-select-option v-for="each in addTeachers" :key="each.id" :value="each.id">
+        <a-select allowClear :filterOption="filterOption" show-search v-model:value="addTeacherId">
+          <a-select-option v-for="each in addTeachers" :key="each.name" :value="each.id">
             {{ each.name }}
           </a-select-option>
         </a-select>
@@ -136,8 +140,8 @@
     </a-form>
     <a-form>
       <a-form-item label="选择班级">
-        <a-select v-model:value="addClassId">
-          <a-select-option v-for="each in addClasses" :key="each.id" :value="each.id">
+        <a-select allowClear :filterOption="filterOption" show-search v-model:value="addClassId">
+          <a-select-option v-for="each in addClasses" :key="each.name" :value="each.id">
             {{ each.name }}
           </a-select-option>
         </a-select>
@@ -163,7 +167,8 @@ import { Course, isCourse } from '@/interface/course'
 import axios from 'axios'
 import { onMounted } from 'vue'
 import { ref } from 'vue'
-import convertTimestamp from '@/utils/time'
+import { filterOption } from '@/utils/filterOption'
+import { convertTimestampDate } from '@/utils/time'
 import { watch } from 'vue'
 import { Class, isClass } from '@/interface/class'
 import { Employee, isEmployee } from '@/interface/employee'

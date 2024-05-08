@@ -3,12 +3,10 @@ import { Dropdown, Menu, MenuItem } from 'ant-design-vue'
 import { useUserStore } from '@/store/modules/user.ts'
 import { computed } from 'vue'
 import type { MenuInfo } from 'ant-design-vue/lib/menu/src/interface'
-import { ArrowLeftOnRectangleIcon } from '@heroicons/vue/24/outline'
-import { useI18n } from 'vue-i18n'
+import { ArrowLeftOnRectangleIcon, PencilIcon } from '@heroicons/vue/24/outline'
+import { router } from '@/router'
 
-const { t } = useI18n()
-
-type MenuEvent = 'logout' | 'lock'
+type MenuEvent = 'logout' | 'lock' | 'password'
 
 const userStore = useUserStore()
 const getUserInfo = computed(() => userStore.userInfo)
@@ -22,6 +20,9 @@ function handleMenuClick(e: MenuInfo) {
   switch (e.key as MenuEvent) {
     case 'logout':
       handleLoginOut()
+      break
+    case 'password':
+      router.push('/reset')
       break
     case 'lock':
       break
@@ -51,10 +52,16 @@ function handleMenuClick(e: MenuInfo) {
     </span>
     <template #overlay>
       <Menu @click="handleMenuClick">
+        <MenuItem key="password">
+          <span class="flex items-center">
+            <PencilIcon class="w-4 h-4 mr-1" />
+            <span>修改密码</span>
+          </span>
+        </MenuItem>
         <MenuItem key="logout">
           <span class="flex items-center">
             <ArrowLeftOnRectangleIcon class="w-4 h-4 mr-1" />
-            <span>{{ t('layout.header.dropdownItemLoginOut') }}</span>
+            <span>退出登陆</span>
           </span>
         </MenuItem>
       </Menu>

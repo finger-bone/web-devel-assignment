@@ -7,7 +7,7 @@
         <a-button type="link" @click="handleRemove(record)">删除</a-button>
       </template>
       <template #lastOperationTime="{ text }">
-        {{ convertTimestamp(text) }}
+        {{ convertTimestampDateTime(text) }}
       </template>
     </a-table>
     <a-modal
@@ -18,7 +18,7 @@
       @cancel="handleEditCancel"
     >
       <template #title>编辑部门</template>
-      <a-input v-model:value="editName" placeholder="请输入部门名称" />
+      <a-input v-model:value="editName" placeholder="请输入部门名称，长度为2-10位" />
     </a-modal>
     <a-modal
       v-model:visible="isAddModalVisible"
@@ -28,7 +28,7 @@
       @cancel="handleAddCancel"
     >
       <template #title>添加部门</template>
-      <a-input v-model:value="addName" placeholder="请输入部门名称" />
+      <a-input v-model:value="addName" placeholder="请输入部门名称，长度为2-10位" />
     </a-modal>
     <a-modal
       v-model:visible="isDeleteModalVisible"
@@ -54,8 +54,8 @@ if (!token || token.length === 0) {
 }
 
 // UI Part
-import convertTimestamp from '@/utils/time'
-import { notification } from 'ant-design-vue';
+import { convertTimestampDateTime } from '@/utils/time'
+import { notification } from 'ant-design-vue'
 
 const isEditModalVisible = ref(false)
 const isAddModalVisible = ref(false)
@@ -81,8 +81,8 @@ const columns = [
 
 async function handleEditOk() {
   if (currentDepartment && editName.value) {
-    if(!(await validateDepartmentName(editName.value, currentDepartment.departmentName))) {
-      return;
+    if (!(await validateDepartmentName(editName.value, currentDepartment.departmentName))) {
+      return
     }
     await editDepartment(currentDepartment, editName.value)
     isEditModalVisible.value = false
@@ -94,8 +94,8 @@ function handleEditCancel() {
 }
 
 async function handleAddOk() {
-  if(!(await validateDepartmentName(addName.value))) {
-    return;
+  if (!(await validateDepartmentName(addName.value))) {
+    return
   }
   if (addName.value) {
     await addDepartment(addName.value)
@@ -179,35 +179,34 @@ async function editDepartment(department: Department, newDepartmentName: string)
   }
 }
 
-async function validateDepartmentName(departmentName: string, excluded: string = "") {
-  if(departmentName.length < 2 || departmentName.length > 10) {
+async function validateDepartmentName(departmentName: string, excluded: string = '') {
+  if (departmentName.length < 2 || departmentName.length > 10) {
     notification.error({
       message: '部门名称长度应在2-10之间',
-    });
-    return false;
+    })
+    return false
   }
-  if(
-    !((await axios.get(
-      `/api/secure/department/valid/${departmentName}`,
-      {
+  if (
+    !(
+      await axios.get(`/api/secure/department/valid/${departmentName}`, {
         params: {
           excluded: excluded,
-        }
-      }
-    )).data)
+        },
+      })
+    ).data
   ) {
     notification.error({
       message: '部门名称已存在',
-    });
-    return false;
+    })
+    return false
   }
 
-  return true;
+  return true
 }
 
 async function addDepartment(departmentName: string) {
-  if(!(await validateDepartmentName(departmentName))) {
-    return;
+  if (!(await validateDepartmentName(departmentName))) {
+    return
   }
   try {
     if (departmentName) {

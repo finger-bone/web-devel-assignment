@@ -1,5 +1,8 @@
 <template>
-  <a-form @submit="handleSearch">
+  <a-form @submit="() => {
+    current = 1;
+    handleSearch();
+  }">
     <a-row :gutter="18">
       <a-col :span="5">
         <a-form-item label="课程名称">
@@ -8,7 +11,7 @@
       </a-col>
       <a-col :span="4">
         <a-form-item label="学分">
-          <a-input-number v-model:value="searchForm.courseCredit" />
+          <a-input-number v-model:value="searchForm.courseCredit" :min="0" />
         </a-form-item>
       </a-col>
       <a-col :span="6">
@@ -37,17 +40,18 @@
       <a-button type="link" @click="handleRemove(record)">删除</a-button>
     </template>
     <template #startTime="{ text }">
-      {{ convertTimestamp(text) }}
+      {{ convertTimestampDate(text) }}
     </template>
     <template #endTime="{ text }">
-      {{ convertTimestamp(text) }}
+      {{ convertTimestampDate(text) }}
     </template>
     <template #lastOperationTime="{ text }">
-      {{ convertTimestamp(text) }}
+      {{ convertTimestampDateTime(text) }}
     </template>
   </a-table>
 
   <a-pagination
+    show-quick-jumper
     v-model:current="current"
     v-model:pageSize="pageSize"
     show-size-changer
@@ -69,8 +73,8 @@
 
   <a-modal
     v-model:visible="isAddModalVisible"
-    ok-text="Confirm"
-    cancel-text="Cancel"
+    ok-text="确认"
+    cancel-text="取消"
     @ok="handleAddOk"
     @cancel="handleAddCancel"
   >
@@ -101,8 +105,8 @@
 
   <a-modal
     v-model:visible="isEditModalVisible"
-    ok-text="Confirm"
-    cancel-text="Cancel"
+    ok-text="确认"
+    cancel-text="取消"
     @ok="handleEditOk"
     @cancel="handleEditCancel"
   >
@@ -137,7 +141,7 @@ import { Course, isCourse } from '@/interface/course'
 import axios from 'axios'
 import { Ref, onMounted } from 'vue'
 import { ref } from 'vue'
-import convertTimestamp from '@/utils/time'
+import { convertTimestampDate, convertTimestampDateTime } from '@/utils/time'
 import { Dayjs } from 'dayjs'
 import dayjs from 'dayjs'
 import { notification } from 'ant-design-vue'
@@ -214,6 +218,12 @@ async function validateCourseForm(form: CourseForm) {
   if (!form.courseName) {
     notification.error({
       message: '课程名不能为空',
+    })
+    return false
+  }
+  if (form.courseName.length < 2) {
+    notification.error({
+      message: '课程名不能小于2个字符',
     })
     return false
   }
