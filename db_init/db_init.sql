@@ -29,7 +29,8 @@ CREATE TABLE Classes (
     classroom TEXT,
     start_time DATE,
     end_time DATE,
-    head_teacher_id INT
+    head_teacher_id INT,
+    last_operation_time TIMESTAMP,
 );
 
 CREATE TABLE Students (
