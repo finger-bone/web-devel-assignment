@@ -30,7 +30,7 @@ CREATE TABLE Classes (
     start_time DATE,
     end_time DATE,
     head_teacher_id INT,
-    last_operation_time TIMESTAMP,
+    last_operation_time TIMESTAMP
 );
 
 CREATE TABLE Students (
@@ -72,5 +72,3 @@ CREATE TABLE Course_Class (
     FOREIGN KEY (course_id) REFERENCES Courses(id),
     FOREIGN KEY (class_id) REFERENCES Classes(id)
 );
-
-INSERT INTO Users (username, password, role) VALUES ('admin', '$2a$10$NJjcxU4NCRIymA83KDKfYeNxWVPG5ShXsmbhj3yUcR.CqwUkj7FkC', 'admin');

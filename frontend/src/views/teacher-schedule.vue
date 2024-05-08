@@ -165,8 +165,9 @@ const timeScheduleOption = computed(() => {
                 formatter: function (value: any) {
                     // value is a timestamp in milliseconds
                     return dayjs(value).format('YYYY/MM/DD');
-                }
-            }
+                },
+                splitNumber: 4
+            },
         },
         yAxis: {
             type: 'category',
