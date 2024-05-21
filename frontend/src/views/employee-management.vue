@@ -520,6 +520,14 @@ async function validateEmployeeForm(form: EmployeeForm, excluded: string = '') {
     return false
   }
 
+  if (form.image && !form.image.type.startsWith('image')) {
+    notification.error({
+      message: '无效的图像',
+      description: '请上传图片。',
+    })
+    return false
+  }
+
   return true
 }
 
